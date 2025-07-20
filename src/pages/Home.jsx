@@ -1,63 +1,52 @@
 import ItemGrid from "@/components/ItemGrid";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 export default function Home() {
-    const [allItems, setAllItems] = useState([]);
-    const [items, setItems] = useState([]);
-    const [isLoading, setIsLoading] = useState(true)
+    const [search, setSearch] = useState('');
 
-    useEffect(() => {
-        fetch('https://itx-frontend-test.onrender.com/api/product')
-            .then(response => response.json())
-            .then(data => {
-                setItems(data)
-                setAllItems(data)
-                setIsLoading(false)
-            })
-            .catch(error => console.error('Error fetching items:', error));
-    }, []);
-
-    const handleSearch = (event) => {
-        const searchTerms = event.target.value.trim().toLowerCase();
-
-        if (searchTerms === "") {
-            setItems(allItems);
-            return;
+    const searchItems = (items) => {
+        if (search === '') {
+            return items
         }
 
-        const searchResult = allItems.filter(item => {
+        return items.filter(item => {
             const brand = item.brand.toLowerCase()
             const model = item.model.toLowerCase()
             const itemName = `${brand} ${model}`
 
-            return itemName.includes(searchTerms)
-        })
+            return itemName.includes(search)
+        });
+    } 
 
-        setItems(searchResult);
-    }
+    const { data, isPending } = useQuery({
+        queryKey: ['products', search],
+        queryFn: async () => 
+            fetch('https://itx-frontend-test.onrender.com/api/product')
+                .then(response => response.json())
+                .then(searchItems)
+    })
 
     const Loading = () => (
         <p>Loading...</p>
     )
 
-    const Items = () => (
-        <>
+    return (
+        <div className="container mx-auto p-4">
             <div className="flex justify-end w-full mb-4">
                 <Input
                     type="text"
                     placeholder="Search items..."
                     className="w-full md:w-1/3 "
-                    onChange={handleSearch}
+                    onChange={(event) => setSearch(event.target.value)}
                 />
             </div>
-            <ItemGrid items={items} />
-        </>
-    )
-
-    return (
-        <div className="container mx-auto p-4">
-            {isLoading ? <Loading /> : <Items />}
+            {isPending ? (
+                <Loading />
+            ) : (
+                <ItemGrid items={data ?? []} />
+            )}
         </div>
     );
 }
