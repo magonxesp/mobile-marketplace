@@ -30,11 +30,13 @@ function Toggle({
   className,
   variant,
   size,
+  active,
   ...props
 }) {
   return (
     <TogglePrimitive.Root
       data-slot="toggle"
+      data-state={(active ?? false) ? "on" : "off"}
       className={cn(toggleVariants({ variant, size, className }))}
       {...props} />
   );
