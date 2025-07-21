@@ -7,6 +7,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { CartProvider } from "@/context/cart";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,14 +32,16 @@ export default function App() {
       persistOptions={{ persister: localStoragePersister }}
     >
       <ReactQueryDevtools initialIsOpen={false} />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<DefaultLayout />}>
-            <Route index element={<Home />} />
-            <Route path="product/:productId" element={<Product />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<DefaultLayout />}>
+              <Route index element={<Home />} />
+              <Route path="product/:productId" element={<Product />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </CartProvider>
     </PersistQueryClientProvider>
   );
 }
